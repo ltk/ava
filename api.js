@@ -24,19 +24,23 @@ function Api(options) {
 	EventEmitter.call(this);
 
 	this.options = objectAssign({
-		cwd: process.cwd(),
-		resolveTestsFrom: process.cwd(),
 		match: []
 	}, options);
 
+	this.options.cwd = this.options.cwd || process.cwd();
+	this.options.resolveTestsFrom = this.options.resolveTestsFrom || this.options.cwd;
+
 	this.options.require = (this.options.require || []).map(function (moduleId) {
+		var originalCwd = process.cwd();
+		process.chdir(this.options.cwd);
 		var ret = resolveCwd(moduleId);
 		if (ret === null) {
 			throw new Error('Could not resolve required module \'' + moduleId + '\'');
 		}
+		process.chdir(originalCwd);
 
 		return ret;
-	});
+	}.bind(this));
 
 	Object.keys(Api.prototype).forEach(function (key) {
 		this[key] = this[key].bind(this);
