@@ -24,15 +24,13 @@ function Api(options) {
 	EventEmitter.call(this);
 
 	this.options = objectAssign({
+		resolveTestsFrom: process.cwd(),
 		match: []
 	}, options);
 
-	this.options.cwd = this.options.cwd || process.cwd();
-	this.options.resolveTestsFrom = this.options.resolveTestsFrom || this.options.cwd;
-
 	this.options.require = (this.options.require || []).map(function (moduleId) {
 		var originalCwd = process.cwd();
-		process.chdir(this.options.cwd);
+		if (options.pkgDir) process.chdir(options.pkgDir);
 		var ret = resolveCwd(moduleId);
 		if (ret === null) {
 			throw new Error('Could not resolve required module \'' + moduleId + '\'');
@@ -40,7 +38,7 @@ function Api(options) {
 		process.chdir(originalCwd);
 
 		return ret;
-	}.bind(this));
+	});
 
 	Object.keys(Api.prototype).forEach(function (key) {
 		this[key] = this[key].bind(this);
